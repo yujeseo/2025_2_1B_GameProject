@@ -13,52 +13,47 @@ public class InteractableObject : MonoBehaviour
     public Color highlightColor = Color.yellow;
     public float highlightIntensity = 1.5f;
 
-    private Renderer objectRenderer;
+    public Renderer objectRenderer;
     private Color originalColor;
+
     private bool isHighlighted = false;
+
 
     public enum InteractionType
     {
-        Item,
-        Machine,
-        Building,
+        Item,     
+        Machine,   
+        Building,  
         NPC,
-        Collectible
+        Collectible 
     }
 
     protected virtual void HighlightObject()
     {
+        
         if (objectRenderer != null && !isHighlighted)
         {
             objectRenderer.material.color = highlightColor;
-
-            if (objectRenderer.material.HasProperty("_EmissionColor"))
-            {
-                objectRenderer.material.SetColor("_EmissionColor", highlightColor * highlightIntensity);
-            }
-
+            objectRenderer.material.SetFloat("_Emission", highlightIntensity);
             isHighlighted = true;
         }
     }
 
     protected virtual void RemoveHighlight()
     {
+        
         if (objectRenderer != null && isHighlighted)
         {
             objectRenderer.material.color = originalColor;
-
-            if (objectRenderer.material.HasProperty("_EmissionColor"))
-            {
-                objectRenderer.material.SetColor("_EmissionColor", Color.black);
-            }
-
+            objectRenderer.material.SetFloat("_Emission", 0f);
             isHighlighted = false;
         }
     }
 
     protected virtual void CollectItem()
     {
-        Destroy(gameObject);
+        
+        Destroy(gameObject); 
     }
 
     protected virtual void OperateMachine()
@@ -76,8 +71,9 @@ public class InteractableObject : MonoBehaviour
 
     protected virtual void TalkToNPC()
     {
-        Debug.Log($"{objectName}와 대화를 시작합니다.");
+        Debug.Log($"{objectName}와 대화를 시작합니다."); 
     }
+
 
     public virtual void Interact()
     {
@@ -92,11 +88,11 @@ public class InteractableObject : MonoBehaviour
             case InteractionType.Building:
                 AccessBuilding();
                 break;
-            case InteractionType.NPC:
-                TalkToNPC();
-                break;
             case InteractionType.Collectible:
                 CollectItem();
+                break;
+            case InteractionType.NPC:
+                TalkToNPC();
                 break;
         }
     }
@@ -113,7 +109,6 @@ public class InteractableObject : MonoBehaviour
         {
             originalColor = objectRenderer.material.color;
         }
-
         gameObject.layer = 8; 
     }
 
@@ -128,4 +123,10 @@ public class InteractableObject : MonoBehaviour
         Debug.Log($"[{objectName}] 범위에서 벗어남");
         RemoveHighlight();
     }
+
+
+
+
+
+
 }

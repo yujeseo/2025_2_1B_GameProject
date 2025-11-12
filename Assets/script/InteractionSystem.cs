@@ -13,46 +13,95 @@ public class InteractionSystem : MonoBehaviour
 
     [Header("UI 설정")]
     public Text interactionText;
-    public GameObject interactionUl;
-
+    public GameObject interactionUI;
 
     private Transform playerTransform;
-    private Interactableobject currentInteractiable;
+    private InteractableObject currentInteractable;
 
-    void HandleinteractionInput()
+    void Start()
     {
-        if (currentInteractiabie != null && Input.GetKeyDown(interactionKey))
+        playerTransform = transform;
+        HideInteractionUI();
+    }
+    void Update()
+    {
+        CheckForInteractables();
+        HandleInteractionInput();
+    }
+
+    void CheckForInteractables()
+    {
+        Vector3 checkPosition = playerTransform.position + playerTransform.forward * (interactionRange * 0.5f);
+        Collider[] hitColliders = Physics.OverlapSphere(checkPosition, interactionRange, interactionLayerMask); //구와 충돌한 모든 콜라이더 배열
+
+        InteractableObject closestInteractable = null; 
+        float closestDistance = float.MaxValue; 
+
+        foreach (Collider collider in hitColliders)
         {
-            currentInteractiable.Interact();
+            InteractableObject interactable = collider.GetComponent<InteractableObject>();
+            if (interactable != null)
+            {
+                float distance = Vector3.Distance(playerTransform.position, collider.transform.position);
+
+                Vector3 directionToObject = (collider.transform.position - playerTransform.position).normalized;
+                float angle = Vector3.Angle(playerTransform.forward, directionToObject);
+
+                if (angle < 90f && distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestInteractable = interactable;
+                }
+            }
+        }
+
+        if (closestInteractable != currentInteractable)
+        {
+            if (currentInteractable != null)
+            {
+                currentInteractable.OnPlayerExit(); 
+            }
+
+            currentInteractable = closestInteractable;
+
+            if (currentInteractable != null)
+            {
+                currentInteractable.OnPlayerEnter(); 
+                ShowInteractionUI(currentInteractable.GetInteractionText());
+            }
+            else
+            {
+                HideInteractionUI();
+            }
         }
     }
 
-    void ShowinteractionUI(string text)
+    void HandleInteractionInput()
+    {
+        if (currentInteractable != null && Input.GetKeyDown(interactionKey))
+        {
+            currentInteractable.Interact(); 
+        }
+    }
+
+    void ShowInteractionUI(string text)
     {
         if (interactionUI != null)
         {
-            interactionUl.SetActive(true);
+            interactionUI.SetActive(true);
         }
 
         if (interactionText != null)
         {
             interactionText.text = text;
         }
-
-
     }
 
     void HideInteractionUI()
     {
         if (interactionUI != null)
         {
-            interactionUl.SetActive(false);
+            interactionUI.SetActive(false);
         }
-
     }
-
-
-
-
-
 }
